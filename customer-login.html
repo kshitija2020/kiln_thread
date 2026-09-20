@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Customer Sign In — Kiln & Thread Account & Orders</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220%22%20%22100%22%20%22100%22><text y=%22.9em%22 font-size=%2290%22>📦</text></svg>">
+</head>
+<body>
+
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="nav-container">
+      <a href="index.html" class="brand">
+        <div class="brand-icon">KT</div>
+        <div>
+          <span class="brand-title brand-font">Kiln & Thread</span>
+          <span class="brand-tagline">Artisanal Customer Portal</span>
+        </div>
+      </a>
+      <div class="nav-links">
+        <a href="admin-login.html" class="nav-link">Switch to Admin Staff Login</a>
+        <a href="index.html" class="nav-link">Home</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="main-content">
+    <div class="auth-wrapper">
+      <div class="auth-card">
+        
+        <div class="auth-header">
+          <span class="badge-role badge-customer">📦 Customer Account</span>
+          <h1 id="pageTitle">Customer Sign In</h1>
+          <p id="pageSubtitle">Track your handcrafted orders and trace shipments to your doorstep.</p>
+        </div>
+
+        <!-- Auth Tabs: Sign In vs Register -->
+        <div class="auth-tabs" role="tablist">
+          <button type="button" class="auth-tab active" id="tabLogin" role="tab" aria-selected="true">Sign In</button>
+          <button type="button" class="auth-tab" id="tabRegister" role="tab" aria-selected="false">Create Account</button>
+        </div>
+
+        <!-- Alert messages -->
+        <div id="authAlert" class="auth-alert" role="alert"></div>
+
+        <!-- Quick Demo Customer Account Helper -->
+        <div class="demo-credentials-box" id="demoHelperBox">
+          <div class="demo-credentials-header">
+            <span class="demo-credentials-title">⚡ Quick Demo Customer</span>
+            <button type="button" class="btn-fill-demo" id="btnFillCustomer">Fill Credentials</button>
+          </div>
+          <div class="demo-credentials-body">
+            Customer: <strong>Clara Oswald</strong><br>
+            Email: <strong>clara.oswald@example.com</strong><br>
+            Password: <strong>customer123</strong>
+          </div>
+        </div>
+
+        <!-- Semantic Form -->
+        <form id="customerAuthForm" method="POST">
+          
+          <!-- Name field (only for registration) -->
+          <div class="form-group" id="groupName" style="display: none;">
+            <label for="custName" class="form-label">Full Name</label>
+            <div class="form-control-wrapper">
+              <input 
+                type="text" 
+                id="custName" 
+                name="name" 
+                class="form-input" 
+                autocomplete="name" 
+                placeholder="e.g. Clara Oswald"
+              >
+            </div>
+          </div>
+
+          <!-- Email field -->
+          <div class="form-group">
+            <label for="custEmail" class="form-label">Email Address</label>
+            <div class="form-control-wrapper">
+              <input 
+                type="email" 
+                id="custEmail" 
+                name="email" 
+                class="form-input" 
+                autocomplete="username" 
+                placeholder="you@example.com" 
+                required 
+                enterkeyhint="next"
+              >
+            </div>
+          </div>
+
+          <!-- Password field -->
+          <div class="form-group">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
+              <label for="custPassword" class="form-label" style="margin-bottom: 0;">Password</label>
+              <span id="forgotPasswordLink" style="font-size: 0.775rem; color: var(--text-muted);">Minimum 6 characters</span>
+            </div>
+            <div class="form-control-wrapper">
+              <input 
+                type="password" 
+                id="custPassword" 
+                name="password" 
+                class="form-input" 
+                autocomplete="current-password" 
+                placeholder="Enter password" 
+                required 
+                enterkeyhint="done"
+              >
+              <button type="button" class="password-toggle-btn" id="togglePasswordBtn" aria-label="Toggle password visibility">Show</button>
+            </div>
+          </div>
+
+          <button type="submit" class="btn-submit" id="btnSubmitCustomer">
+            <span id="submitBtnText">Sign In to My Orders</span> &rarr;
+          </button>
+        </form>
+
+        <div class="auth-footer">
+          <p>Are you a store manager? <a href="admin-login.html">Staff executive login</a></p>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <p>&copy; 2026 Kiln & Thread Artisanal Goods. Built for SY B.Tech EBR Project.</p>
+  </footer>
+
+  <script>
+    let isRegisterMode = false;
+
+    const tabLogin = document.getElementById('tabLogin');
+    const tabRegister = document.getElementById('tabRegister');
+    const groupName = document.getElementById('groupName');
+    const nameInput = document.getElementById('custName');
+    const emailInput = document.getElementById('custEmail');
+    const passInput = document.getElementById('custPassword');
+    const toggleBtn = document.getElementById('togglePasswordBtn');
+    const alertBox = document.getElementById('authAlert');
+    const fillBtn = document.getElementById('btnFillCustomer');
+    const demoBox = document.getElementById('demoHelperBox');
+    const pageTitle = document.getElementById('pageTitle');
+    const pageSubtitle = document.getElementById('pageSubtitle');
+    const submitBtn = document.getElementById('btnSubmitCustomer');
+    const submitBtnText = document.getElementById('submitBtnText');
+
+    // Switch Tabs
+    tabLogin.addEventListener('click', () => {
+      isRegisterMode = false;
+      tabLogin.classList.add('active');
+      tabRegister.classList.remove('active');
+      groupName.style.display = 'none';
+      nameInput.required = false;
+      demoBox.style.display = 'block';
+      passInput.setAttribute('autocomplete', 'current-password');
+      pageTitle.textContent = 'Customer Sign In';
+      pageSubtitle.textContent = 'Track your handcrafted orders and trace shipments to your doorstep.';
+      submitBtnText.textContent = 'Sign In to My Orders';
+      alertBox.className = 'auth-alert';
+    });
+
+    tabRegister.addEventListener('click', () => {
+      isRegisterMode = true;
+      tabRegister.classList.add('active');
+      tabLogin.classList.remove('active');
+      groupName.style.display = 'block';
+      nameInput.required = true;
+      demoBox.style.display = 'none';
+      passInput.setAttribute('autocomplete', 'new-password');
+      pageTitle.textContent = 'Create Customer Account';
+      pageSubtitle.textContent = 'Join Kiln & Thread to save your delivery addresses and track past orders.';
+      submitBtnText.textContent = 'Create My Account';
+      alertBox.className = 'auth-alert';
+    });
+
+    // Fill Demo Credentials
+    fillBtn.addEventListener('click', () => {
+      emailInput.value = 'clara.oswald@example.com';
+      passInput.value = 'customer123';
+      showAlert('Demo customer credentials filled!', 'success');
+    });
+
+    // Toggle Password Visibility
+    toggleBtn.addEventListener('click', () => {
+      if (passInput.type === 'password') {
+        passInput.type = 'text';
+        toggleBtn.textContent = 'Hide';
+      } else {
+        passInput.type = 'password';
+        toggleBtn.textContent = 'Show';
+      }
+    });
+
+    function showAlert(message, type) {
+      alertBox.textContent = message;
+      alertBox.className = `auth-alert show ${type}`;
+    }
+
+    // Form Submission
+    document.getElementById('customerAuthForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      alertBox.className = 'auth-alert';
+      submitBtn.disabled = true;
+      submitBtnText.textContent = isRegisterMode ? 'Creating account...' : 'Verifying account...';
+
+      const endpoint = isRegisterMode ? '/api/auth/customer/register' : '/api/auth/customer/login';
+      const payload = isRegisterMode
+        ? { name: nameInput.value, email: emailInput.value, password: passInput.value }
+        : { email: emailInput.value, password: passInput.value };
+
+      try {
+        const response = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+          showAlert(isRegisterMode ? 'Account created! Loading your portal...' : 'Login successful! Loading your orders...', 'success');
+          localStorage.setItem('kt_customer_user', JSON.stringify(data.user));
+          localStorage.setItem('kt_customer_token', data.token);
+          setTimeout(() => {
+            window.location.href = 'customer-dashboard.html';
+          }, 600);
+        } else {
+          showAlert(data.message || 'Authentication failed.', 'error');
+          submitBtn.disabled = false;
+          submitBtnText.textContent = isRegisterMode ? 'Create My Account' : 'Sign In to My Orders';
+        }
+      } catch (err) {
+        showAlert('Unable to reach server. Please check your connection.', 'error');
+        submitBtn.disabled = false;
+        submitBtnText.textContent = isRegisterMode ? 'Create My Account' : 'Sign In to My Orders';
+      }
+    });
+  </script>
+
+</body>
+</html>

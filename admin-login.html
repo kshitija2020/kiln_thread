@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Sign In — Kiln & Thread Executive Portal</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220%22%20%22100%22%20%22100%22><text y=%22.9em%22 font-size=%2290%22>📊</text></svg>">
+</head>
+<body>
+
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="nav-container">
+      <a href="index.html" class="brand">
+        <div class="brand-icon">KT</div>
+        <div>
+          <span class="brand-title brand-font">Kiln & Thread</span>
+          <span class="brand-tagline">Staff & Executive Portal</span>
+        </div>
+      </a>
+      <div class="nav-links">
+        <a href="customer-login.html" class="nav-link">Switch to Customer Login</a>
+        <a href="index.html" class="nav-link">Home</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="main-content">
+    <div class="auth-wrapper">
+      <div class="auth-card admin-theme">
+        
+        <div class="auth-header">
+          <span class="badge-role badge-admin">🔒 Executive Access</span>
+          <h1>Admin Sign In</h1>
+          <p>Sign in to view executive sales summary, best sellers, and manage order fulfillment.</p>
+        </div>
+
+        <!-- Alert messages -->
+        <div id="authAlert" class="auth-alert" role="alert"></div>
+
+        <!-- Quick Fill Helper Box -->
+        <div class="demo-credentials-box">
+          <div class="demo-credentials-header">
+            <span class="demo-credentials-title">⚡ Pre-seeded Staff Account</span>
+            <button type="button" class="btn-fill-demo" id="btnFillAdmin">Fill Credentials</button>
+          </div>
+          <div class="demo-credentials-body">
+            Email: <strong>admin@kilnandthread.com</strong><br>
+            Password: <strong>changeme123</strong>
+          </div>
+        </div>
+
+        <!-- Semantic Form -->
+        <form id="adminLoginForm" method="POST" action="/api/auth/admin/login">
+          <div class="form-group">
+            <label for="adminEmail" class="form-label">Administrator Email</label>
+            <div class="form-control-wrapper">
+              <input 
+                type="email" 
+                id="adminEmail" 
+                name="email" 
+                class="form-input" 
+                autocomplete="username" 
+                placeholder="name@kilnandthread.com" 
+                required 
+                enterkeyhint="next"
+              >
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
+              <label for="adminPassword" class="form-label" style="margin-bottom: 0;">Password</label>
+              <span style="font-size: 0.775rem; color: var(--text-muted);">From seed_admin.sql</span>
+            </div>
+            <div class="form-control-wrapper">
+              <input 
+                type="password" 
+                id="adminPassword" 
+                name="password" 
+                class="form-input" 
+                autocomplete="current-password" 
+                placeholder="Enter admin password" 
+                required 
+                enterkeyhint="done"
+              >
+              <button type="button" class="password-toggle-btn" id="togglePasswordBtn" aria-label="Toggle password visibility">Show</button>
+            </div>
+          </div>
+
+          <button type="submit" class="btn-submit" id="btnSubmitAdmin">
+            <span>Sign In to Summary Dashboard</span> &rarr;
+          </button>
+        </form>
+
+        <div class="auth-footer">
+          <p>Looking for customer orders? <a href="customer-login.html">Sign in as customer</a></p>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <p>&copy; 2026 Kiln & Thread Artisanal Goods. EBR Project.</p>
+  </footer>
+
+  <script>
+    const form = document.getElementById('adminLoginForm');
+    const emailInput = document.getElementById('adminEmail');
+    const passInput = document.getElementById('adminPassword');
+    const toggleBtn = document.getElementById('togglePasswordBtn');
+    const alertBox = document.getElementById('authAlert');
+    const fillBtn = document.getElementById('btnFillAdmin');
+    const submitBtn = document.getElementById('btnSubmitAdmin');
+
+    // Quick Fill Demo Credentials
+    fillBtn.addEventListener('click', () => {
+      emailInput.value = 'admin@kilnandthread.com';
+      passInput.value = 'changeme123';
+      showAlert('Demo admin credentials filled!', 'success');
+    });
+
+    // Toggle Password Visibility
+    toggleBtn.addEventListener('click', () => {
+      if (passInput.type === 'password') {
+        passInput.type = 'text';
+        toggleBtn.textContent = 'Hide';
+      } else {
+        passInput.type = 'password';
+        toggleBtn.textContent = 'Show';
+      }
+    });
+
+    function showAlert(message, type) {
+      alertBox.textContent = message;
+      alertBox.className = `auth-alert show ${type}`;
+    }
+
+    // Form Submission
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      alertBox.className = 'auth-alert';
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<span>Verifying credentials...</span>';
+
+      try {
+        const response = await fetch('/api/auth/admin/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: emailInput.value,
+            password: passInput.value
+          })
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+          showAlert('Login successful! Redirecting to summary dashboard...', 'success');
+          localStorage.setItem('kt_admin_user', JSON.stringify(data.user));
+          localStorage.setItem('kt_admin_token', data.token);
+          setTimeout(() => {
+            window.location.href = 'admin-dashboard.html';
+          }, 600);
+        } else {
+          showAlert(data.message || 'Invalid admin credentials.', 'error');
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = '<span>Sign In to Summary Dashboard</span> &rarr;';
+        }
+      } catch (err) {
+        showAlert('Unable to connect to the server. Please check your network or server status.', 'error');
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<span>Sign In to Summary Dashboard</span> &rarr;';
+      }
+    });
+  </script>
+
+</body>
+</html>

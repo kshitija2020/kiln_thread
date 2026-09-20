@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Orders & Delivery Tracking — Kiln & Thread</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220%22%20%22100%22%20%22100%22><text y=%22.9em%22 font-size=%2290%22>📦</text></svg>">
+</head>
+<body>
+
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="nav-container">
+      <a href="index.html" class="brand">
+        <div class="brand-icon">KT</div>
+        <div>
+          <span class="brand-title brand-font">Kiln & Thread</span>
+          <span class="brand-tagline">My Customer Account</span>
+        </div>
+      </a>
+      <div class="nav-links">
+        <div class="user-badge-pill">
+          <div class="user-avatar-initials customer" id="custAvatar">CO</div>
+          <div>
+            <div id="custGreetingName" style="font-size: 0.85rem; font-weight: 600;">Clara Oswald</div>
+            <div id="custGreetingEmail" style="font-size: 0.725rem; color: var(--text-muted);">clara.oswald@example.com</div>
+          </div>
+        </div>
+        <button id="btnCustomerLogout" class="btn-signout">Sign Out</button>
+      </div>
+    </div>
+  </nav>
+
+  <main class="main-content">
+
+    <header class="dashboard-header">
+      <div class="dashboard-title-group">
+        <h1>My Orders & Delivery Tracking</h1>
+        <p>Live order progress, shipment milestones, and handcrafted artisan purchases.</p>
+      </div>
+      <div>
+        <button id="btnRefreshOrders" class="btn-portal-action" style="padding: 0.5rem 1rem; font-size: 0.85rem; background: var(--terracotta); color: #fff;">
+          🔄 Refresh Orders
+        </button>
+      </div>
+    </header>
+
+    <!-- Alert Banner -->
+    <div id="actionBanner" class="auth-alert" style="margin-bottom: 2rem;"></div>
+
+    <!-- Active Orders Section -->
+    <section>
+      <div id="ordersContainer">
+        <p style="color: var(--text-muted); font-size: 0.95rem;">Loading your purchase history and delivery tracking...</p>
+      </div>
+    </section>
+
+    <!-- Test Order Showcase Section -->
+    <section style="margin-top: 4rem;">
+      <div class="panel-header">
+        <div>
+          <h2>Explore Artisanal Boutique Catalog</h2>
+          <p style="font-size: 0.875rem; color: var(--text-secondary); margin-top: 0.25rem;">
+            Place a test purchase to witness instant live delivery tracking & see it appear dynamically on the Admin Executive Dashboard.
+          </p>
+        </div>
+        <span class="panel-badge">Kiln & Thread Studio</span>
+      </div>
+
+      <div class="product-grid" id="catalogGrid">
+        <p style="color: var(--text-muted); padding: 1rem;">Loading boutique items...</p>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="footer">
+    <p>&copy; 2026 Kiln & Thread Artisanal Goods. Built for SY B.Tech EBR Project.</p>
+  </footer>
+
+  <script>
+    // Authentication Check
+    const custUser = JSON.parse(localStorage.getItem('kt_customer_user') || 'null');
+    if (!custUser) {
+      window.location.href = 'customer-login.html';
+    } else {
+      document.getElementById('custGreetingName').textContent = custUser.name || 'Valued Customer';
+      document.getElementById('custGreetingEmail').textContent = custUser.email || '';
+      const initials = (custUser.name || 'CU').split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+      document.getElementById('custAvatar').textContent = initials;
+    }
+
+    // Sign out handler
+    document.getElementById('btnCustomerLogout').addEventListener('click', () => {
+      localStorage.removeItem('kt_customer_user');
+      localStorage.removeItem('kt_customer_token');
+      window.location.href = 'customer-login.html';
+    });
+
+    document.getElementById('btnRefreshOrders').addEventListener('click', loadCustomerOrders);
+
+    // Lifecycle Stages for Amazon-style stepper
+    const STAGES = [
+      { key: 'paid', label: 'Order Placed' },
+      { key: 'processing', label: 'Processing' },
+      { key: 'shipped', label: 'Shipped' },
+      { key: 'out_for_delivery', label: 'Out for Delivery' },
+      { key: 'delivered', label: 'Delivered' }
+    ];
+
+    function getStageIndex(status) {
+      const idx = STAGES.findIndex(s => s.key === status);
+      return idx >= 0 ? idx : 0;
+    }
+
+    // Load Orders
+    async function loadCustomerOrders() {
+      try {
+        const res = await fetch(`/api/customer/orders?email=${encodeURIComponent(custUser.email)}`);
+        const data = await res.json();
+
+        const container = document.getElementById('ordersContainer');
+
+        if (!data.success || !data.orders || data.orders.length === 0) {
+          container.innerHTML = `
+            <div class="panel-card" style="text-align: center; padding: 3rem 1.5rem;">
+              <div style="font-size: 2.5rem; margin-bottom: 0.75rem;">🛍️</div>
+              <h3>No Orders Found</h3>
+              <p style="color: var(--text-secondary); margin-top: 0.4rem;">You have not placed any orders yet. Choose a handcrafted piece below to test order fulfillment!</p>
+            </div>
+          `;
+          return;
+        }
+
+        container.innerHTML = data.orders.map(order => renderOrderCard(order)).join('');
+      } catch (err) {
+        console.error('Error loading customer orders:', err);
+      }
+    }
+
+    function renderOrderCard(order) {
+      const stageIdx = getStageIndex(order.status);
+      const progressPct = (stageIdx / (STAGES.length - 1)) * 100;
+      const orderDate = new Date(order.created_at).toLocaleDateString('en-US', {
+        month: 'short', day: 'numeric', year: 'numeric'
+      });
+      const totalFormatted = '$' + (order.total_cents / 100).toFixed(2);
+
+      let carrierDisplay = '';
+      if (order.carrier || order.tracking_number) {
+        carrierDisplay = `
+          <div class="tracking-carrier-tag">
+            Shipped via <strong>${order.carrier || 'Express Courier'}</strong> &bull; Tracking: <span>${order.tracking_number || 'Pending'}</span>
+          </div>
+        `;
+      } else {
+        carrierDisplay = `
+          <div class="tracking-carrier-tag" style="color: var(--text-muted);">
+            Awaiting carrier dispatch assignment from artisan workshop.
+          </div>
+        `;
+      }
+
+      // Stepper Steps HTML
+      const stepsHtml = STAGES.map((s, idx) => {
+        let stateClass = '';
+        if (idx < stageIdx) stateClass = 'completed';
+        else if (idx === stageIdx) stateClass = 'active';
+
+        return `
+          <div class="stepper-step ${stateClass}">
+            <div class="step-node">${idx < stageIdx ? '✓' : (idx + 1)}</div>
+            <div class="step-label">${s.label}</div>
+          </div>
+        `;
+      }).join('');
+
+      // Items HTML
+      const itemsHtml = order.items.map(item => `
+        <div class="order-item-row">
+          <img src="${item.photo_url || 'https://images.unsplash.com/photo-1546938576-8219ca96ffb5?auto=format&fit=crop&w=200&q=80'}" alt="${item.product_name}" class="order-item-img">
+          <div class="order-item-details">
+            <div class="order-item-name">${item.product_name}</div>
+            <div class="order-item-meta">Qty: ${item.quantity} &bull; Unit Price: $${(item.unit_price_cents / 100).toFixed(2)}</div>
+          </div>
+          <div class="order-item-price">$${((item.unit_price_cents * item.quantity) / 100).toFixed(2)}</div>
+        </div>
+      `).join('');
+
+      // History Timeline HTML
+      const historyHtml = (order.history || []).map(h => `
+        <div class="history-timeline-item">
+          <div class="history-time">${new Date(h.created_at).toLocaleDateString()} ${new Date(h.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+          <div class="history-note"><strong>[${h.status.toUpperCase()}]</strong> ${h.note || ''}</div>
+        </div>
+      `).join('');
+
+      return `
+        <div class="order-card">
+          <div class="order-header-bar">
+            <div class="order-header-meta">
+              <div class="order-meta-col">
+                <span class="order-meta-label">Order Placed</span>
+                <span class="order-meta-val">${orderDate}</span>
+              </div>
+              <div class="order-meta-col">
+                <span class="order-meta-label">Total Amount</span>
+                <span class="order-meta-val">${totalFormatted}</span>
+              </div>
+              <div class="order-meta-col">
+                <span class="order-meta-label">Ship To</span>
+                <span class="order-meta-val">${order.shipping_name || custUser.name}</span>
+              </div>
+            </div>
+            <div>
+              <span class="order-meta-label">Order #</span>
+              <strong style="color: var(--text-primary); font-size: 1.05rem;">${order.order_number}</strong>
+            </div>
+          </div>
+
+          <div class="order-body">
+            <!-- Amazon-style Progress Bar -->
+            <div class="tracking-stepper-container">
+              <div class="tracking-stepper-header">
+                <div class="tracking-headline">
+                  Status: <span class="badge-status ${order.status}">${order.status.replace(/_/g, ' ')}</span>
+                  ${order.estimated_delivery ? `<span style="font-size: 0.9rem; color: var(--text-secondary); margin-left: 0.5rem;">Estimated Delivery: <strong>${order.estimated_delivery}</strong></span>` : ''}
+                </div>
+                ${carrierDisplay}
+              </div>
+
+              <div class="stepper-track">
+                <div class="stepper-progress-fill" style="width: ${progressPct}%;"></div>
+                ${stepsHtml}
+              </div>
+            </div>
+
+            <!-- Items -->
+            <div class="order-items-list">
+              ${itemsHtml}
+            </div>
+
+            <!-- Status history -->
+            ${order.history && order.history.length > 0 ? `
+              <div class="history-timeline">
+                <div class="history-timeline-title">Delivery Milestones & Updates</div>
+                ${historyHtml}
+              </div>
+            ` : ''}
+          </div>
+        </div>
+      `;
+    }
+
+    // Load Catalog
+    async function loadCatalog() {
+      try {
+        const res = await fetch('/api/products');
+        const data = await res.json();
+        const grid = document.getElementById('catalogGrid');
+
+        if (data.success && data.products) {
+          grid.innerHTML = data.products.slice(0, 6).map(prod => `
+            <div class="product-card">
+              <img src="${prod.photo_url}" alt="${prod.name}" class="product-thumb">
+              <div class="product-info">
+                <span class="product-category-tag">${prod.category_name}</span>
+                <h3 class="product-title">${prod.name}</h3>
+                <div class="product-maker">${prod.maker_name} &bull; ${prod.material || 'Artisanal'}</div>
+                <div class="product-bottom-row">
+                  <span class="product-price">$${prod.price_usd}</span>
+                  <button class="btn-buy-demo" onclick="placeTestOrder(${prod.id})">
+                    Order Piece
+                  </button>
+                </div>
+              </div>
+            </div>
+          `).join('');
+        }
+      } catch (err) {
+        console.error('Error loading catalog:', err);
+      }
+    }
+
+    // Place Test Order
+    window.placeTestOrder = async function(productId) {
+      const banner = document.getElementById('actionBanner');
+      banner.style.display = 'none';
+
+      try {
+        const res = await fetch('/api/customer/orders', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            customer_email: custUser.email,
+            product_id: productId,
+            quantity: 1
+          })
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+          banner.className = 'auth-alert show success';
+          banner.innerHTML = `🎉 <strong>${data.message}</strong> Your new order is placed and ready for delivery tracking below!`;
+          loadCustomerOrders(); // Re-render orders
+          window.scrollTo({ top: 120, behavior: 'smooth' });
+        } else {
+          banner.className = 'auth-alert show error';
+          banner.textContent = data.message || 'Failed to place test order.';
+        }
+      } catch (err) {
+        banner.className = 'auth-alert show error';
+        banner.textContent = 'Network error while placing test order.';
+      }
+    };
+
+    // Initial Load
+    loadCustomerOrders();
+    loadCatalog();
+  </script>
+
+</body>
+</html>

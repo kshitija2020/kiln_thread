@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Executive Summary & Storefront Operations — Kiln & Thread</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220%22%20%22100%22%20%22100%22><text y=%22.9em%22 font-size=%2290%22>📊</text></svg>">
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <nav class="navbar">
+    <div class="nav-container">
+      <a href="index.html" class="brand">
+        <div class="brand-icon">KT</div>
+        <div>
+          <span class="brand-title brand-font">Kiln & Thread</span>
+          <span class="brand-tagline">Executive Summary Dashboard</span>
+        </div>
+      </a>
+      <div class="nav-links">
+        <div class="user-badge-pill">
+          <div class="user-avatar-initials">AD</div>
+          <div>
+            <div id="adminUserName" style="font-size: 0.85rem; font-weight: 600;">Store Admin</div>
+            <div id="adminUserEmail" style="font-size: 0.725rem; color: var(--text-muted);">admin@kilnandthread.com</div>
+          </div>
+        </div>
+        <button id="btnAdminLogout" class="btn-signout">Sign Out</button>
+      </div>
+    </div>
+  </nav>
+
+  <main class="main-content">
+    
+    <!-- Top Header -->
+    <header class="dashboard-header">
+      <div class="dashboard-title-group">
+        <h1>Store Summary & Operations</h1>
+        <p>Real-time analytics, sales summary, inventory health, and delivery fulfillment lifecycle.</p>
+      </div>
+      <div>
+        <button id="btnRefreshSummary" class="btn-portal-action" style="padding: 0.5rem 1rem; font-size: 0.85rem; background: #2D3748; color: #fff;">
+          🔄 Refresh Metrics
+        </button>
+      </div>
+    </header>
+
+    <!-- Top KPI Grid -->
+    <section class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-title">
+          <span>Total Sales Revenue</span>
+          <span>💵</span>
+        </div>
+        <div class="kpi-value" id="kpiRevenue">$0.00</div>
+        <div class="kpi-subtext">Across fulfilled & active orders</div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-title">
+          <span>Total Orders</span>
+          <span>📦</span>
+        </div>
+        <div class="kpi-value" id="kpiOrders">0</div>
+        <div class="kpi-subtext" id="kpiPendingText">0 pending fulfillment</div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-title">
+          <span>Active Products</span>
+          <span>🏺</span>
+        </div>
+        <div class="kpi-value" id="kpiProducts">0</div>
+        <div class="kpi-subtext">In live catalog</div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-title">
+          <span>Registered Customers</span>
+          <span>👥</span>
+        </div>
+        <div class="kpi-value" id="kpiCustomers">0</div>
+        <div class="kpi-subtext">Accounts created</div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-title">
+          <span>In Transit</span>
+          <span>🚚</span>
+        </div>
+        <div class="kpi-value" id="kpiInTransit">0</div>
+        <div class="kpi-subtext">Shipped or Out for Delivery</div>
+      </div>
+    </section>
+
+    <!-- Order Status Distribution Bar -->
+    <section class="panel-card" style="margin-bottom: 2rem;">
+      <div class="panel-header">
+        <h2>Order Pipeline Stages</h2>
+        <span class="panel-badge">Amazon-Style Lifecycle</span>
+      </div>
+      <div class="status-bar-container">
+        <div class="status-bar" id="statusBar">
+          <div class="status-segment paid" id="barPaid" style="width: 25%;" title="Paid"></div>
+          <div class="status-segment processing" id="barProcessing" style="width: 25%;" title="Processing"></div>
+          <div class="status-segment shipped" id="barShipped" style="width: 25%;" title="Shipped"></div>
+          <div class="status-segment delivered" id="barDelivered" style="width: 25%;" title="Delivered"></div>
+        </div>
+        <div class="status-legend">
+          <div class="status-legend-item">
+            <span class="status-dot" style="background: #3182CE;"></span>
+            <span>Paid (Placed): <strong id="countPaid">0</strong></span>
+          </div>
+          <div class="status-legend-item">
+            <span class="status-dot" style="background: #DD6B20;"></span>
+            <span>Processing: <strong id="countProcessing">0</strong></span>
+          </div>
+          <div class="status-legend-item">
+            <span class="status-dot" style="background: #805AD5;"></span>
+            <span>Shipped: <strong id="countShipped">0</strong></span>
+          </div>
+          <div class="status-legend-item">
+            <span class="status-dot" style="background: #38A169;"></span>
+            <span>Delivered: <strong id="countDelivered">0</strong></span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Two-column Summary Analytics -->
+    <div class="grid-2col">
+      <!-- Best Sellers Panel -->
+      <section class="panel-card">
+        <div class="panel-header">
+          <h2>Best Sellers by Units Sold</h2>
+          <span class="panel-badge">Top Products</span>
+        </div>
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Product</th>
+                <th>Price</th>
+                <th style="text-align: right;">Units Sold</th>
+              </tr>
+            </thead>
+            <tbody id="bestSellersTableBody">
+              <tr><td colspan="3" style="text-align: center; color: var(--text-muted);">Loading sales analytics...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Revenue by Maker & Low Stock Panel -->
+      <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+        <!-- Revenue by Maker -->
+        <section class="panel-card">
+          <div class="panel-header">
+            <h2>Revenue by Artisan Maker</h2>
+            <span class="panel-badge">Studio Contribution</span>
+          </div>
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Artisan Studio</th>
+                  <th style="text-align: right;">Total Revenue</th>
+                </tr>
+              </thead>
+              <tbody id="makerRevenueTableBody">
+                <tr><td colspan="2" style="text-align: center; color: var(--text-muted);">Loading maker data...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- Low Stock Alerts -->
+        <section class="panel-card">
+          <div class="panel-header">
+            <h2>⚠️ Low Stock Inventory Alert</h2>
+            <span class="panel-badge" style="background: var(--danger-light); color: var(--danger);">&lt; 5 Units Remaining</span>
+          </div>
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Product</th>
+                  <th>Material</th>
+                  <th style="text-align: right;">Stock Qty</th>
+                </tr>
+              </thead>
+              <tbody id="lowStockTableBody">
+                <tr><td colspan="3" style="text-align: center; color: var(--text-muted);">Loading stock levels...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <!-- Fulfillment Management Section -->
+    <section class="panel-card">
+      <div class="panel-header">
+        <h2>Live Customer Orders & Tracking Management</h2>
+        <span class="panel-badge">Fulfillment Controls</span>
+      </div>
+      <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 1.25rem;">
+        Advance orders through the delivery stages to automatically update customer timeline tracking and carrier records.
+      </p>
+      
+      <div class="table-responsive">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Order #</th>
+              <th>Customer</th>
+              <th>Items</th>
+              <th>Total</th>
+              <th>Status</th>
+              <th>Carrier & Tracking</th>
+              <th>Fulfillment Action</th>
+            </tr>
+          </thead>
+          <tbody id="ordersTableBody">
+            <tr><td colspan="7" style="text-align: center; color: var(--text-muted);">Loading orders...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="footer">
+    <p>&copy; 2026 Kiln & Thread Artisanal Goods. EBR Project Executive Management.</p>
+  </footer>
+
+  <!-- Status Update Modal -->
+  <dialog id="updateOrderModal" style="border: 1px solid var(--border-strong); border-radius: var(--radius-lg); padding: 2rem; max-width: 480px; width: 90%; margin: auto; box-shadow: var(--shadow-lg); background: var(--bg-surface);">
+    <h3 style="margin-bottom: 1rem; font-size: 1.4rem;">Update Order Fulfillment</h3>
+    <form id="updateOrderForm">
+      <input type="hidden" id="modalOrderId">
+      
+      <div class="form-group">
+        <label class="form-label" for="modalOrderStatus">New Stage Status</label>
+        <select id="modalOrderStatus" class="form-input" required>
+          <option value="paid">Paid (Order Placed)</option>
+          <option value="processing">Processing (Preparing Goods)</option>
+          <option value="shipped">Shipped (Handed to Carrier)</option>
+          <option value="out_for_delivery">Out for Delivery</option>
+          <option value="delivered">Delivered</option>
+          <option value="cancelled">Cancelled</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="modalCarrier">Carrier</label>
+        <input type="text" id="modalCarrier" class="form-input" placeholder="e.g. FedEx Express, UPS, DHL">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="modalTrackingNumber">Tracking Number</label>
+        <input type="text" id="modalTrackingNumber" class="form-input" placeholder="e.g. KT-TRK-982145">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="modalStatusNote">Milestone Update Note</label>
+        <input type="text" id="modalStatusNote" class="form-input" placeholder="e.g. Package scanned at sorting hub">
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem;">
+        <button type="button" class="btn-signout" onclick="document.getElementById('updateOrderModal').close()">Cancel</button>
+        <button type="submit" class="btn-update-order" style="padding: 0.65rem 1.25rem;">Save & Notify Tracking</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script>
+    // Authentication Check
+    const adminUser = JSON.parse(localStorage.getItem('kt_admin_user') || 'null');
+    if (!adminUser) {
+      window.location.href = 'admin-login.html';
+    } else {
+      document.getElementById('adminUserName').textContent = adminUser.name || 'Store Admin';
+      document.getElementById('adminUserEmail').textContent = adminUser.email || 'admin@kilnandthread.com';
+    }
+
+    // Sign out handler
+    document.getElementById('btnAdminLogout').addEventListener('click', () => {
+      localStorage.removeItem('kt_admin_user');
+      localStorage.removeItem('kt_admin_token');
+      window.location.href = 'admin-login.html';
+    });
+
+    document.getElementById('btnRefreshSummary').addEventListener('click', loadDashboardData);
+
+    // Fetch Summary & Orders Data
+    async function loadDashboardData() {
+      try {
+        const [summaryRes, ordersRes] = await Promise.all([
+          fetch('/api/admin/summary'),
+          fetch('/api/admin/orders')
+        ]);
+
+        const summaryData = await summaryRes.json();
+        const ordersData = await ordersRes.json();
+
+        if (summaryData.success) {
+          renderSummary(summaryData.summary);
+        }
+        if (ordersData.success) {
+          renderOrders(ordersData.orders);
+        }
+      } catch (err) {
+        console.error('Error fetching dashboard data:', err);
+      }
+    }
+
+    function renderSummary(s) {
+      document.getElementById('kpiRevenue').textContent = '$' + Number(s.total_revenue_usd).toLocaleString('en-US', { minimumFractionDigits: 2 });
+      document.getElementById('kpiOrders').textContent = s.total_orders;
+      document.getElementById('kpiPendingText').textContent = `${s.pending_fulfillment_count} pending fulfillment`;
+      document.getElementById('kpiProducts').textContent = s.active_products_count;
+      document.getElementById('kpiCustomers').textContent = s.total_customers_count;
+      document.getElementById('kpiInTransit').textContent = s.in_transit_count;
+
+      // Status Bar
+      const total = s.total_orders || 1;
+      const cPaid = s.status_counts.paid || 0;
+      const cProc = s.status_counts.processing || 0;
+      const cShip = (s.status_counts.shipped || 0) + (s.status_counts.out_for_delivery || 0);
+      const cDel = s.status_counts.delivered || 0;
+
+      document.getElementById('countPaid').textContent = cPaid;
+      document.getElementById('countProcessing').textContent = cProc;
+      document.getElementById('countShipped').textContent = cShip;
+      document.getElementById('countDelivered').textContent = cDel;
+
+      document.getElementById('barPaid').style.width = ((cPaid / total) * 100) + '%';
+      document.getElementById('barProcessing').style.width = ((cProc / total) * 100) + '%';
+      document.getElementById('barShipped').style.width = ((cShip / total) * 100) + '%';
+      document.getElementById('barDelivered').style.width = ((cDel / total) * 100) + '%';
+
+      // Best Sellers Table
+      const bsTbody = document.getElementById('bestSellersTableBody');
+      if (s.best_sellers && s.best_sellers.length > 0) {
+        bsTbody.innerHTML = s.best_sellers.map(p => `
+          <tr>
+            <td>
+              <div style="display: flex; align-items: center; gap: 0.75rem;">
+                ${p.photo_url ? `<img src="${p.photo_url}" alt="${p.name}" style="width: 36px; height: 36px; border-radius: 6px; object-fit: cover;">` : ''}
+                <strong>${p.name}</strong>
+              </div>
+            </td>
+            <td>$${p.price_usd}</td>
+            <td style="text-align: right; font-weight: 700; color: var(--terracotta);">${p.units_sold}</td>
+          </tr>
+        `).join('');
+      } else {
+        bsTbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">No completed sales yet.</td></tr>';
+      }
+
+      // Maker Revenue Table
+      const mkrTbody = document.getElementById('makerRevenueTableBody');
+      if (s.revenue_by_maker && s.revenue_by_maker.length > 0) {
+        mkrTbody.innerHTML = s.revenue_by_maker.map(m => `
+          <tr>
+            <td><strong>${m.maker}</strong></td>
+            <td style="text-align: right; font-weight: 600; color: var(--sage);">$${Number(m.revenue).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
+          </tr>
+        `).join('');
+      } else {
+        mkrTbody.innerHTML = '<tr><td colspan="2" style="text-align:center;">No maker revenue recorded.</td></tr>';
+      }
+
+      // Low Stock Table
+      const lsTbody = document.getElementById('lowStockTableBody');
+      if (s.low_stock_products && s.low_stock_products.length > 0) {
+        lsTbody.innerHTML = s.low_stock_products.map(p => `
+          <tr>
+            <td><strong>${p.name}</strong></td>
+            <td style="color: var(--text-secondary);">${p.material || 'Handmade'}</td>
+            <td style="text-align: right;">
+              <span style="background: var(--danger-light); color: var(--danger); font-weight: 700; padding: 0.15rem 0.5rem; border-radius: 4px;">
+                ${p.stock_qty} left
+              </span>
+            </td>
+          </tr>
+        `).join('');
+      } else {
+        lsTbody.innerHTML = '<tr><td colspan="3" style="text-align:center; color: var(--sage);">All products healthy in stock (&ge; 5 units).</td></tr>';
+      }
+    }
+
+    function renderOrders(orders) {
+      const tbody = document.getElementById('ordersTableBody');
+      if (!orders || orders.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align: center;">No orders recorded in system.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = orders.map(order => {
+        const itemsSummary = order.items.map(i => `${i.quantity}x ${i.product_name}`).join(', ');
+        const totalFormatted = '$' + (order.total_cents / 100).toFixed(2);
+        
+        let trackingInfo = '<span style="color: var(--text-muted);">Unassigned</span>';
+        if (order.carrier || order.tracking_number) {
+          trackingInfo = `<div><strong>${order.carrier || 'Carrier'}</strong><br><span style="font-family: monospace; font-size: 0.8rem;">${order.tracking_number || 'N/A'}</span></div>`;
+        }
+
+        return `
+          <tr>
+            <td><strong>${order.order_number}</strong></td>
+            <td>
+              <div>${order.customer_name}</div>
+              <div style="font-size: 0.75rem; color: var(--text-muted);">${order.customer_email}</div>
+            </td>
+            <td style="font-size: 0.825rem; max-width: 220px;">${itemsSummary}</td>
+            <td style="font-weight: 600;">${totalFormatted}</td>
+            <td>
+              <span class="badge-status ${order.status}">
+                ${order.status.replace(/_/g, ' ')}
+              </span>
+            </td>
+            <td>${trackingInfo}</td>
+            <td>
+              <button class="btn-update-order" onclick="openUpdateModal(${order.id}, '${order.status}', '${order.carrier || ''}', '${order.tracking_number || ''}')">
+                Update Status
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // Modal Operations
+    const modal = document.getElementById('updateOrderModal');
+    const modalForm = document.getElementById('updateOrderForm');
+
+    window.openUpdateModal = function(id, status, carrier, tracking) {
+      document.getElementById('modalOrderId').value = id;
+      document.getElementById('modalOrderStatus').value = status;
+      document.getElementById('modalCarrier').value = carrier;
+      document.getElementById('modalTrackingNumber').value = tracking;
+      document.getElementById('modalStatusNote').value = '';
+      modal.showModal();
+    };
+
+    modalForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const id = document.getElementById('modalOrderId').value;
+      const status = document.getElementById('modalOrderStatus').value;
+      const carrier = document.getElementById('modalCarrier').value;
+      const tracking_number = document.getElementById('modalTrackingNumber').value;
+      const note = document.getElementById('modalStatusNote').value;
+
+      try {
+        const res = await fetch(`/api/admin/orders/${id}/status`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            status,
+            carrier,
+            tracking_number,
+            note,
+            admin_email: adminUser.email
+          })
+        });
+
+        const data = await res.json();
+        if (data.success) {
+          modal.close();
+          loadDashboardData(); // Refresh summary and orders
+        } else {
+          alert(data.message || 'Failed to update order');
+        }
+      } catch (err) {
+        alert('Network error while updating order.');
+      }
+    });
+
+    // Initial Load
+    loadDashboardData();
+  </script>
+
+</body>
+</html>

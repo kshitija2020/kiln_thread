@@ -1,0 +1,15 @@
+{
+  "name": "kiln-and-thread",
+  "version": "1.0.0",
+  "description": "Kiln & Thread Artisanal Storefront - Admin & Customer Portals",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "pg": "^8.13.3"
+  }
+}
